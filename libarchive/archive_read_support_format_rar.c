@@ -3096,9 +3096,11 @@ static int
 copy_from_lzss_window_to_unp(struct archive_read *a, const void **buffer,
                              int64_t startpos, int length)
 {
+  if(length < 0) {
+    return (ARCHIVE_FATAL);
+  }
   int windowoffs, firstpart;
   struct rar *rar = (struct rar *)(a->format->data);
-
   if (!rar->unp_buffer)
   {
     if ((rar->unp_buffer = malloc(rar->unp_buffer_size)) == NULL)
@@ -3387,6 +3389,9 @@ run_filters(struct archive_read *a)
     filters->vm = calloc(1, sizeof(*filters->vm));
     if (!filters->vm)
       return 0;
+  }
+  if(filter->blocklength > 262144) {
+    return 0;
   }
 
   ret = copy_from_lzss_window(a, filters->vm->memory, start, filter->blocklength);
